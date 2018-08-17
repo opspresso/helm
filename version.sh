@@ -5,7 +5,7 @@ REPONAME=${2}
 GITHUB_TOKEN=${3}
 
 NOW=$(cat ./VERSION)
-NEW=$(curl -s https://api.github.com/repos/helm/helm/releases/latest | grep tag_name | cut -d'"' -f4)
+NEW=$(curl -s https://api.github.com/repos/helm/helm/releases/latest | grep tag_name | cut -d'"' -f4 | xargs)
 
 echo "USERNAME: ${USERNAME}"
 echo "REPONAME: ${REPONAME}"
