@@ -1,5 +1,5 @@
 # helm
 
 ```bash
-docker pull opspresso/helm
+docker pull quay.io/opspresso/helm
 ```
