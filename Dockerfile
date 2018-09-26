@@ -4,7 +4,7 @@ FROM alpine
 
 RUN apk add --no-cache bash curl
 
-ENV VERSION v2.10.0
+ENV VERSION v2.11.0
 RUN curl -sL https://storage.googleapis.com/kubernetes-helm/helm-${VERSION}-linux-amd64.tar.gz | tar xz && \
     mv linux-amd64/helm /usr/local/bin/helm
 
