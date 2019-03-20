@@ -5,6 +5,8 @@ SHELL_DIR=$(dirname $0)
 USERNAME=${CIRCLE_PROJECT_USERNAME}
 REPONAME=${CIRCLE_PROJECT_REPONAME}
 
+REPOPATH="helm/helm"
+
 BUCKET="repo.opspresso.com"
 
 GIT_USERNAME="bot"
@@ -85,19 +87,15 @@ _cf_reset() {
 }
 
 _slack() {
-    NAME=${1}
-    REPO=${2}
-    VERSION=${3}
-
     if [ ! -z ${SLACK_TOKEN} ]; then
-        TITLE="${NAME} updated"
+        TITLE="${REPONAME} updated"
 
-        FOOTER="<https://github.com/${REPO}/releases/tag/${VERSION}|${REPO}>"
+        FOOTER="<https://github.com/${REPOPATH}/releases/tag/${NEW}|${REPOPATH}>"
 
         curl -sL opspresso.com/tools/slack | bash -s -- \
             --token="${SLACK_TOKEN}" --username="${USERNAME}" \
             --footer="${FOOTER}" --footer_icon="https://assets-cdn.github.com/favicon.ico" \
-            --color="good" --title="${TITLE}" "\`${VERSION}\`"
+            --color="good" --title="${TITLE}" "\`${NEW}\`"
     fi
 }
 
@@ -110,13 +108,9 @@ _replace() {
 
 _get_version() {
     NOW=$(cat ${SHELL_DIR}/VERSION | xargs)
-    NEW=$(curl -s https://api.github.com/repos/helm/helm/releases/latest | grep tag_name | cut -d'"' -f4 | xargs)
+    NEW=$(curl -s https://api.github.com/repos/${REPOPATH}/releases/latest | grep tag_name | cut -d'"' -f4 | xargs)
 
     printf '# %-10s %-10s %-10s\n' "${REPONAME}" "${NOW}" "${NEW}"
-}
-
-_send_slack() {
-    _slack "helm" "helm/helm" "${NEW}"
 }
 
 build() {
@@ -132,7 +126,7 @@ build() {
         _s3_sync "${SHELL_DIR}/target/dist/" "${BUCKET}/latest"
         _cf_reset "${BUCKET}"
 
-        _send_slack
+        _slack
     fi
 }
 
