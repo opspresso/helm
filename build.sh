@@ -56,13 +56,6 @@ _prepare() {
     find ./** | grep [.]sh | xargs chmod 755
 }
 
-_get_version() {
-    NOW=$(cat ${SHELL_DIR}/VERSION | xargs)
-    NEW=$(curl -s https://api.github.com/repos/helm/helm/releases/latest | grep tag_name | cut -d'"' -f4 | xargs)
-
-    printf '# %-10s %-10s %-10s\n' "${REPONAME}" "${NOW}" "${NEW}"
-}
-
 _git_push() {
     if [ ! -z ${GITHUB_TOKEN} ]; then
         git config --global user.name "${GIT_USERNAME}"
@@ -91,8 +84,39 @@ _cf_reset() {
     fi
 }
 
+_slack() {
+    NAME=${1}
+    REPO=${2}
+    VERSION=${3}
+
+    if [ ! -z ${SLACK_TOKEN} ]; then
+        TITLE="${NAME} updated"
+
+        FOOTER="<https://github.com/${REPO}/releases/tag/${VERSION}|${REPO}>"
+
+        curl -sL opspresso.com/tools/slack | bash -s -- \
+            --token="${SLACK_TOKEN}" --username="${USERNAME}" \
+            --footer="${FOOTER}" --footer_icon="https://assets-cdn.github.com/favicon.ico" \
+            --color="good" --title="${TITLE}" "\`${VERSION}\`"
+    fi
+}
+
 _replace() {
+    printf "${NEW}" > ${SHELL_DIR}/VERSION
+    printf "${NEW}" > ${SHELL_DIR}/target/dist/${REPONAME}
+
     sed -i -e "s/ENV VERSION .*/ENV VERSION ${NEW}/g" ${SHELL_DIR}/Dockerfile
+}
+
+_get_version() {
+    NOW=$(cat ${SHELL_DIR}/VERSION | xargs)
+    NEW=$(curl -s https://api.github.com/repos/helm/helm/releases/latest | grep tag_name | cut -d'"' -f4 | xargs)
+
+    printf '# %-10s %-10s %-10s\n' "${REPONAME}" "${NOW}" "${NEW}"
+}
+
+_send_slack() {
+    _slack "helm" "helm/helm" "${NEW}"
 }
 
 build() {
@@ -101,15 +125,14 @@ build() {
     _get_version
 
     if [ "${NEW}" != "" ] && [ "${NEW}" != "${NOW}" ]; then
-        printf "${NEW}" > ${SHELL_DIR}/VERSION
-        printf "${NEW}" > ${SHELL_DIR}/target/dist/${REPONAME}
-
         _replace
 
         _git_push
 
         _s3_sync "${SHELL_DIR}/target/dist/" "${BUCKET}/latest"
         _cf_reset "${BUCKET}"
+
+        _send_slack
     fi
 }
 
