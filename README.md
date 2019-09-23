@@ -9,6 +9,10 @@
 docker pull opspresso/helm
 ```
 
+** Deprecated **
+
+* https://hub.docker.com/r/alpine/helm
+
 ## version
 
 ```
