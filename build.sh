@@ -68,11 +68,17 @@ _prepare() {
 }
 
 _pickup() {
-    REPOVERSIONS=/tmp/repo-versions
     THISVERSIONS=/tmp/this-versions
-
     curl -s https://api.github.com/repos/${REPOSITORY}/releases | grep tag_name | cut -d'"' -f4 > ${THISVERSIONS}
+
+    _command "this-versions"
+    cat ${THISVERSIONS}
+
+    REPOVERSIONS=/tmp/repo-versions
     curl -s https://api.github.com/repos/${REPOPATH}/releases | grep tag_name | cut -d'"' -f4 > ${REPOVERSIONS}
+
+    _command "repo-versions"
+    cat ${REPOVERSIONS}
 
     while read VERSION; do
         COUNT=$(cat ${THISVERSIONS} | grep "${VERSION}" | wc -l | xargs)
@@ -92,6 +98,7 @@ _package() {
 
     _pickup
 
+    echo
     printf '# %-10s %-10s %-10s\n' "${REPONAME}" "${NOW}" "${NEW}"
 
     _updated
