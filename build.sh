@@ -77,7 +77,7 @@ _pickup() {
     while read VERSION; do
         COUNT=$(cat ${THISVERSIONS} | grep "${VERSION}" | wc -l | xargs)
 
-        if [ "x${COUNT}" == "x0" ];
+        if [ "x${COUNT}" == "x0" ]; then
             NEW="${VERSION}"
             break
         fi
