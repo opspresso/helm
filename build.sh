@@ -67,10 +67,30 @@ _prepare() {
     find ./** | grep [.]sh | xargs chmod 755
 }
 
+_pickup() {
+    REPOVERSIONS=/tmp/repo-versions
+    THISVERSIONS=/tmp/this-versions
+
+    curl -s https://api.github.com/repos/${REPOSITORY}/releases | grep tag_name | cut -d'"' -f4 > ${THISVERSIONS}
+    curl -s https://api.github.com/repos/${REPOPATH}/releases | grep tag_name | cut -d'"' -f4 > ${REPOVERSIONS}
+
+    while read VERSION; do
+        COUNT=$(cat ${THISVERSIONS} | grep "${VERSION}" | wc -l | xargs)
+
+        if [ "x${COUNT}" == "x0" ];
+            NEW="${VERSION}"
+            break
+        fi
+    done < ${REPOVERSIONS}
+}
+
 _package() {
     NOW=$(cat ${SHELL_DIR}/Dockerfile | grep 'ENV VERSION' | awk '{print $3}' | xargs)
-    NEW=$(curl -s https://api.github.com/repos/${REPOPATH}/releases/latest | grep tag_name | cut -d'"' -f4 | xargs)
+
+    # NEW=$(curl -s https://api.github.com/repos/${REPOPATH}/releases | grep tag_name | cut -d'"' -f4 | xargs)
     # NEW=$(curl -s https://api.github.com/repos/${REPOPATH}/releases/latest | grep tag_name | cut -d'"' -f4 | cut -c 2- | xargs)
+
+    _pickup
 
     printf '# %-10s %-10s %-10s\n' "${REPONAME}" "${NOW}" "${NEW}"
 
