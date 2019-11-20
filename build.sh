@@ -4,7 +4,7 @@ OS_NAME="$(uname | awk '{print tolower($0)}')"
 
 SHELL_DIR=$(dirname $0)
 
-REPOSITORY=${GITHUB_REPOSITORY}
+REPOSITORY=${GITHUB_REPOSITORY:-"opspresso/helm"}
 
 USERNAME=${GITHUB_ACTOR}
 REPONAME=$(echo "${REPOSITORY}" | cut -d'/' -f2)
