@@ -14,11 +14,11 @@ docker pull opspresso/helm
 ## version
 
 ```
-ENV VERSION v3.3.3
+ENV VERSION v3.3.4
 ```
 
 ## latest
 
 ```
-ENV LATEST v3.3.3
+ENV LATEST v3.3.4
 ```
